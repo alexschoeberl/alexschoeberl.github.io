@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="Article: Mathematische Theorie von statistischen Tests">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<meta name="theme-color" content="#00C800">
+		<title>Testen von statistischen Hypothesen</title>
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900">
+		<link rel="stylesheet" href="/css/post.css">
+		<script src="/js/code.js"></script>
+	</head>
+
+	<body>
+		<header>
+			<a href="/"><img alt="Picture of the author" width="80" height="80" src="/img/portrait.png"></a>
+			<h2 id="body-header-h2">
+				<a href="/">Alexander Schöberl</a>
+			</h2>
+			<p>Blog · tech, science, tutorials</p>
+		</header>
+
+		<img alt="A circular staircase" src="/img/stairs001.jpg">
+
+		<article lang="de">
+			<h1>Testen von statis&shy;tischen Hypo&shy;thesen</h1>
+			<p class="article-type">Article · <time datetime="2016-01-10">Jan 10, 2016</time></p>
+			<p>Besondere Bedeutung in der Stochastik haben Zufallsvariablen. Dabei handelt es sich um Größen, deren Ausprägung vom Zufall abhängt. Zufallsvariablen können Zahlen oder andere mathematische Objekte sein. Ihr konkreter Wert, auch Realisation genannt, wird durch ein Zufalls&shy;experiment bestimmt. Als Zufallsstichprobe vom Umfang <span class="inline-formula">n</span> bezeichnet man eine zufällige Auswahl von Elementen aus einer Grundgesamtheit. Als Beispiel für die beschriebenen Konzepte kann man sich eine Lieferung von 1000 Orangen an einen Supermarkt vorstellen, die Grundgesamtheit. Jede dieser Früchte kann entweder reif oder noch unreif sein. Die Zuordnung dieser Eigenschaft zu jeder Orange kann man als ein statistisches Merkmal bezeichnen. Ob eine einzelne, zufällig ausgewählte Frucht reif ist, kann mit einer Zufallsvariablen <span class="inline-formula">X</span> beschrieben werden, die dann den Wert <i>0</i> annimmt, im anderen Fall <i>1</i>. Die Zufallsvariable <span class="inline-formula">X</span> weißt eine bestimmte Wahrscheinlichkeits&shy;verteilung auf, die durch einen oder mehrere Parameter exakt festgelegt ist, und mit den Häufigkeiten der Eigenschaften in der Grundgesamtheit zusammenhängt. Für eine repräsentative Stichprobe sollen 10 Orangen jeweils zufällig ausgewählt, deren Reife bestimmt und anschließend zurückgelegt werden. Jede Frucht hat die gleiche Wahrscheinlichkeit, gezogen zu werden. Die Stichprobe kann durch eine Folge von 10 Zufallsvariablen modelliert werden, <span class="inline-formula">X<sub>1</sub></span>, <span class="inline-formula">X<sub>2</sub></span>, bis <span class="inline-formula">X<sub>10</sub></span>. Diese Zufallsvariablen sind unabhängig und so wie X verteilt. Daher handelt es sich um eine Zufallsstichprobe der Zufallsvariablen <span class="inline-formula">X</span>.</p>
+			<p>Als Hypothese bezeichnet man eine Annahme, die möglicherweise gültig ist, was aber noch nicht verifiziert wurde und daher auch nicht unbedingt zutreffen muss. Wird eine Hypothese aufgestellt, ergibt sich die Frage, ob man sie als gültig ansehen oder verwerfen soll. Im wissenschaftlichen Umfeld geht es oft darum, eine Hypothese bezüglich eines unbekannten Parameters der Wahrscheinlichkeits&shy;verteilung einer Grundgesamtheit zu bewerten. Mit statistischen Methoden kann diese Entscheidung auf Basis von erhobenen Daten getroffen werden. Da die Grundgesamtheit nicht vollständig untersucht wird, kann die Gültigkeit mit diesen Methoden allerdings nicht mit Sicherheit bestimmt werden. Ein statistischer Test ist jetzt eine mathematische Funktion, die konkreten erhobenen Daten so eine Entscheidung zuweißt.
+			<span class="formula">φ: <b>X</b> ⟶ {0,1}</span>
+			In der Betrachtungsweise der Statistik handelt es sich bei den erhobenen Daten um Zufallsvariablen, deren Realisationen sich bei einer Wiederholung des Experiments ändern könnten. In so einem Fall kann der gleiche Test zu einer anderen Entscheidung bezüglich der ursprünglichen Hypothese führen. Die Daten werden oft in Form einer Zufallsstichprobe erhoben. Die Menge der Elemente von <span class="inline-formula"><b>X</b></span>, die zu einer Ablehnung der Hypothese führen (Funktionswert <i>1</i>), werden als <strong>kritischer Bereich</strong> bezeichnet. Dabei handelt es sich um eine Teilmenge der Definitionsmenge des statistischen Tests. Wie bereits erwähnt kann so ein Test auch eine falsche Entscheidung nahelegen.</p>
+			<p>Ein statistischer Test wird um eine <strong>Testgröße</strong> herum konstruiert. Diese Testgröße ist eine mathematische Funktion der Stichprobe auf einen einzelnen Wert.
+			<span class="formula">T: <b>X</b> ⟶ ℝ</span>
+			Es handelt sich dabei daher um eine Zufallsvariable, deren Wahrscheinlichkeitsverteilung von jener der Stichprobenvariablen abhängt, im Normalfall jedoch nicht übereinstimmt. Die konkrete Realisation der Testgröße führt zur Entscheidung bezüglich der Hypothese. Dafür wird der berechnete Wert mit dem Verglichen, was bei Gültigkeit der Hypothese zu erwarten wäre. Umso größer der sich ergebende Unterschied ist, desto weniger spricht für die Hypothese. Ab einem festgelegten Grenz- bzw. kritischen Wert der Testgröße gilt <span class="inline-formula">φ(x) = 1</span>. Die Menge der Realisationen der Testgröße, die zur Ablehnung der Hypothese führen, werden ebenfalls als kritischer Bereich bezeichnet.</p>
+			<img alt="A calculator on a book" src="/img/math001.jpg">
+			<p>In Wahrheit und unabhängig von der getroffenen Entscheidung, muss die Hypothese entweder gültig oder ungültig sein. Für den Fall, dass der Test eine falsche Entscheidung nahelegt, gibt es 2 Arten von Fehlern zu unterscheiden. Entweder die eingentlich gültige Hypothese wurde verworfen (Fehler 1. Art) oder die in Wahrheit ungültige Hypothese wurde akzeptiert (Fehler 2. Art). Zu einer Hypothese lässt sich immer eine gegensätzliche Alternativhypothese formulieren. Es darf dann nur eine der beiden Hypothesen gültig sein. Eine Hypothese <span class="inline-formula">H</span> zum oberen Orangen-Beispiel könnte zum Beispiel lauten, dass keine der 1000 Früchte unreif ist. Die Alternativhypothese besagt daher, dass es unter der Ladung mindestens eine unreife Orange gibt. Wenn man in diesem Fall alle Orangen untersuchen würde, könnte man die Gültigkeit der Hypothese mit Sicherheit bestimmen. Findet man allerdings 999 reife Orangen und bricht den Test dann vor der zufällig letzten Frucht ab, könnte die Hypothese schon fälschlicherweise akzeptiert werden, was einem Fehler 2. Art entspricht. Die Wahrscheinlichkeit ist allerdings sehr gering, dass eine zufällig gewählte Orange eine Eigenschaft aufweißt, die den 999 Früchten davor fehlt.</p>
+			<h2>Die Nullhypothese</h2>
+			<p>Da man zu einer Fragestellung zwei gegensätzliche Hypothesen aufstellen und testen kann, stellt sich die Frage, von welcher Seite man das Problem betrachten sollte. In der Praxis ist es üblich, den allgemein erwarteten, unspektakulären Fall als Hypothese zu formulieren. Diese bezeichnet man dann auch als <strong>Nullhypothese</strong> <span class="inline-formula">H<sub>0</sub></span>. Die Alternativhypothese <span class="inline-formula">H<sub>1</sub></span> würde dann den spektakulären Fall, der die größeren Konsequenzen nach sich zieht, behaupten. Die statistischen Tests werden so gewählt, dass die Nullhypothese nur verworfen und damit der ungewöhnliche Fall akzeptiert wird, falls die erhobenen Daten nahezu zweifelsfrei dafür sprechen. Die Wahrscheinlichkeit für das Auftreten eines Fehlers 1. Art wird dadurch besonders gering gehalten. Man nennt sie auch Irrtums&shy;wahrscheinlichkeit <span class="inline-formula">α</span>.
+			<span class="formula">α = P(H<sub>0</sub> abgelehnt | H<sub>0</sub> gültig)</span>
+			Sie entspricht der Wahrscheinlichkeit, dass der Test fälschlicherweise den Fall mit den schwerwiegenden Konsequenzen nahelegt, nur weil diese eine Stichprobe zufällig darauf hindeutet. Durch diese unsymmetrische Praxis steigt allerdings gleichzeitig die Wahrscheinlichkeit für einen Fehler 2. Art stark an. Dieser zieht aber auf Grund der Hypothesenwahl keine schwerwiegenden Konsequenzen nach sich.</p>
+			<p>Umso großzügiger der kritische Wert der Testgröße bestimmt ist, ab dem die Nullhypothese verworfen wird, umso kleiner wird die Irrtums&shy;wahrscheinlichkeit. Klassischer Weise legt man vor dem Ziehen der Stichprobe eine maximal zulässige Irrtums&shy;wahrscheinlichkeit, das sogenannte Signifikanzniveau, fest. Dafür wird meistens ein Wert von 5% oder 1% gewählt, je nach der Bedeutung der Fragestellung. Das bedeutet, dass im Durchschnitt bei jedem 20. bzw. 100. Test die eigentlich richtige Nullhypothese verworfen würde. Ausgehend vom festgelegten Signifikanzniveau soll dann der dazu passende kritische Wert und Bereich berechnet werden. Man arbeitet den Test dabei sozusagen rückwärts ab. Dafür muss die Verteilung der Testgröße unter dem Vorbehalt, dass die Nullhypothese gültig ist, bekannt sein. Da das Signifikanzniveau die Gefahr beschreibt, die gültige Nullhypothese fälschlicherweise zu verwerfen, ist dieser Vorbehalt unproblematisch. Erst zum Schluss werden die empirischen Daten erhoben und der konkrete Wert der Testgröße berechnet. Liegt dieser im zuvor bestimmten kritischen Bereich, wird die Nullhypothese abgelehnt.</p>
+			<p class="article-tags">Mathematics · Statistics · Theory</p>
+		</article>
+
+		<footer>
+			<h2>About the author</h2>
+			<p>I'm a master’s student from Vienna, Austria. I'm involved in biomedical and software engineering. Besides, I have an interest in home automation, artificial intelligence and cognitive science.</p>
+			<p class="button-holder">
+				<a href="https://github.com/alexschoeberl" class="github-button">Follow</a><script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+				&emsp;<a href="#" class="mail2-button"><span>@: alex + kankiri·com</span></a>
+			</p>
+			<script>m2("@: alex + kankiri·com"); prerep();</script>
+		</footer>
+	</body>
+</html>

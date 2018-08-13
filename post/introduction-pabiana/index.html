@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="Tutorial: First steps with the Pabiana framework">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<meta name="theme-color" content="#00C800">
+		<title>Introduction to Pabiana</title>
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900">
+		<link rel="stylesheet" href="/css/post.css">
+		<script src="/js/code.js"></script>
+	</head>
+
+	<body>
+		<header>
+			<a href="/"><img alt="Picture of the author" width="80" height="80" src="/img/portrait.png"></a>
+			<h2 id="body-header-h2">
+				<a href="/">Alexander Schöberl</a>
+			</h2>
+			<p>Blog · tech, science, tutorials</p>
+		</header>
+
+		<img alt="A person typing on a notebook" src="/img/computer002.jpg">
+
+		<article lang="en">
+			<h1>Introduction to Pabiana</h1>
+			<p class="article-type">Tutorial · <time datetime="2017-10-10">Oct 04, 2017</time></p>
+			<p>Pabiana is a lightweight <strong>Python</strong> framework that enables you to build large cognitive applications distributed over several nodes. Its intended application area ranges across home automation systems, robot control systems and intelligent software assistants. The framework's networking capabilities are based on the <a href="http://zeromq.org">ZeroMQ</a> library. The functional principles are inspired by the human cortex. Pabiana therefore enforces a very specific style of application design and programming. This article will give you an overview of the framework and how to use it.</p>
+			<h2>Installation</h2>
+			<aside class="lang-links" lang="en">In the context of this article, the term <i>cognitive</i><br>is used to describe systems that process sensory<br>input of multiple modalities, gain a thorough<br>understanding of the data and possibly control<br>actuators based on their insights.</aside>
+			<p>Pabiana is a Python library. It is only tested against the CPython interpreter in its versions starting from 3.5, but might also work under different environments. The source code is published on <a href="https://github.com/kankiri/pabiana">Github</a>. The framework requires recent versions of the <i>PyZMQ</i> and <i>Pip</i> Python packages, which will be downloaded during installation. Therefore, it is recommended to install Pabiana into a virtual environment.</p>
+			<p>To start, create a directory on your computer to contain your application. Inside it, initialize a <a href="https://docs.python.org/3/library/venv.html">virtual environment</a> with a command like the following.</p>
+			<pre>python3 -m venv .myvenv</pre>
+			<p>The last parameter determines the name of the environment. After running the command, a new, possibly invisible directory should have been created inside your application folder. If you are using Git, make sure it will be ignored. By activating your virtual environment, you force Pabiana to be installed within this directory.</p>
+			<pre>python3 -m pip install --upgrade pabiana</pre>
+			<p>This command will install the package and all of its dependencies for your new project. Your system is now set up and ready to create and run a Pabiana application.</p>
+			<h2>The Basics</h2>
+			<p>A Pabiana application consists of various so-called <i>Areas</i>, which are a special type of <i>Nodes</i>. Each Node is contained in its own process, with the Nodes running on a single or multiple IP-connected computers. It must have an unique name and a possibly shared IP address. Besides, it occupies some selectable ports. <i>Area</i> and <i>Node</i> are classes found in the Pabiana package.</p>
+			<p><i>Clocks</i> are a special type of Nodes. They are responsible for synchronizing the workflow of the different Areas. A Pabiana application therefore acts similar to a turn-based game. It needs at least one Clock to run properly.</p>
+			<p>You can now write a script for every <strong><strong>type of area</strong></strong> in which you create an instance of the Area class. A dictionary is required, to match the Node name with the corresponding IP address and ports. Before you start the node, you also have to specify the name of the Clock.</p>
+			<pre>from pabiana import Area<br>
+			ifs = dict()
+			ifs['area-name-pub'] = {'ip': '127.0.0.1', 'port': 15001}
+			ifs['area-name-rcv'] = {'ip': '127.0.0.1', 'port': 15002}
+			ifs['clock-name-pub'] = {'ip': '127.0.0.1', 'port': 15003}
+			ifs['clock-name-rcv'] = {'ip': '127.0.0.1', 'port': 15004}<br>
+			area = Area(name='area-name', interfaces=ifs)
+			area.subscribe(clock_name='clock-name')
+			area.run()</pre>
+			<p>As you can see, each Node occupies two ports, recognizable by the <i>-pub</i> and <i>-rcv</i> suffixes. One of them is used to publish data, while the other receives incoming requests. Other Areas can subscribe to the <i>Publishing Interface</i>. Your script is now ready to be run. Set the logging level of the default logger to 5 in order to see what is happening. It's important to note that you can start multiple Areas from a single one of your scripts. Just make sure to not hard-code their names, as they have to be unique. Use <i>Ctrl-C</i> to stop the process safely.</p>
+			<h2>The Convenient Way</h2>
+			<p>Usually, a Pabiana application consists of a large collection of different, complex Areas. To prevent your project from becoming messy, the framework provides some convenience functions. To use them, you have to stick to a specific project layout. Take a look at the <a href="https://github.com/kankiri/pabiana/tree/master/demos/smarthome">demo project</a>, to get a feeling.</p>
+			<ul>
+				<li>area_type_1/
+					<ul>
+						<li>__init__.py</li>
+					</ul>
+				</li>
+				<li>area_type_2/
+					<ul>
+						<li>__init__.py</li>
+						<li>interface.py</li>
+						<li>logic.py</li>
+						<li>requirements.txt</li>
+					</ul>
+				</li>
+				<li>interfaces.json</li>
+			</ul>
+			<p>As you can see, this time a package is used instead of a script for every type of area. Since the address and port information is shared across all Nodes, it is outsourced into a JSON file. Open the corresponding file in the demo project, to see how it should be structured. At the root of each package (in the <i>init</i> file), you have to provide an Area object named <i>area</i>. Also you have to create a Python dictionary named <i>config</i>, that specifies the objects setup values. The dictionary contains information on the Clock (mandatory) and the Publishing Interfaces the Area subscribes to. It's important to know that an Area can publish data on different channels, or <i>Slots</i>. Therefore, it is possible to subscribe to a single or multiple Slots of an Area. You can also choose the Slot of the Clock you want to listen to.</p>
+			<pre>from pabiana import Area, repo<br>
+			area = Area(repo['area-name'], repo['interfaces'])
+			config = {
+			  'clock-name': 'clock',
+			  'clock-slot': 'fast',
+			  'subscriptions': {
+			    'vision': ['edges', 'colors'],
+			    'engine': None
+			  }
+			}</pre>
+			<p>Utilizing this layout, you are provided with a default runner application and don't have to call the run method yourself. Pabiana's <i>repo</i> dictionary contains some global information, including the name of the current Area.</p>
+			<p>Messages from subscribed Areas are stored in a <i>Deque</i>, with the newest message at index 0. A message is always a dictionary and contains a <i>time-rcvd</i> key, that stores an integer representing the time the message was received. You can compare this value to the Areas <i>time</i> attribute.</p>
+			<pre>recent = area.context['subscribed-area']['slot'][0]</pre>
+			<p>The processing of data happens inside of functions you have to define. By using decorators, you can declare these functions as hooks to be called at specific events. The <i>alteration</i> hook is called whenever a message has arrived during the last round, while the <i>pulse</i> hook is called once for every tick of the Clock. There is also the <i>register</i> decorator, which registers a function as a <i>Remote Trigger</i>. Remote Triggers can be called by other Areas, to influence operation.</p>
+			<pre>@area.register
+			def start():
+			  pass<br>
+			@area.register
+			def stop():
+			  pass<br>
+			@area.alteration
+			def process():
+			  pass<br>
+			@area.pulse
+			def routine():
+			  pass</pre>
+			<p>These functions can be defined in the <i>init</i> file, but it is usually better to do it in other modules, like <i>interface</i> and <i>logic</i>. An Area can call Triggers of another Area with the objects <i>trigger</i> function. To make an Area call one of its own triggers, you should usually use its <i>autoloop</i> method. It's important to note that a trigger is never called more than once in a round.</p>
+			<pre>area.trigger('target-name', 'trigger-name', {'parameter': 'value'})</pre>
+			<p>Every Area type object provides a method to publish processed data to other Areas. The <code class="inline">.publish(data[, slot])</code> method expects a dictionary and an optional slot name. For other Areas to receive these messages, they have to subscribe to them.</p>
+			<h2>Running the Application</h2>
+			After you have created the first simple Areas, it's time to test their communication. At the beginning, you will most likely want to run them all on your local computer. You can start every process for every Area in its own terminal. However, you can also start multiple Areas at the same time, while Python runs the necessary processes in the background.
+			<pre>python3 -m pabiana area_type_1:area1 area_type_1:area2 clock:clock1</pre>
+			<p>Use the interpreter from the virtual environment to run the start-up command. You have to specify a variable number of parameters, each consisting of two parts, divided by a colon. The first part determines the template module (the type) for an Area requested to be run. The second part specifies its name, as it is found in <i>interfaces.json</i>.</p>
+			<p>Pabiana also provides you with a default Clock. Making use of it, you don't have to define your own. You still have to, however, declare its IP address and ports in your Interfaces file. The name of the default Clock is simply <i>clock</i>. Also, you can drop the Slot key from the configuration. To run it together with your Areas, append the <i>-C</i> option to the command.</p>
+			<h2>Application Architecture</h2>
+			<p>To use Pabiana successfully, you have to adapt a very specific architecture. A Pabiana application consists of a great number of Areas, arranged in a pyramid-shaped hierarchy, bound together by their communication channels. At the base of the pyramid you will usually find Areas which collect low-level sensory data or directly interact with the environment through speakers, motors and software APIs. Upper Areas combine sensory and status data from multiple lower Areas for processing. To influence those lower Areas, they make extensive use of their public Remote Triggers. Areas at the top see a rather abstract representation of the environment. The uppermost one has a vague control over everything. Information is <strong>published upwards</strong>, while commands are <strong>issued downwards</strong>.</p>
+			<p>Adapting this architecture allows you to build complex cognitive applications in a natural way, step by step. The application can be distributed over several computers with varying hardware. However, the more data is passed between the Nodes, the stronger the network connection has to be.</p>
+			<p class="article-tags">Cognitive Computing · Machine Learning · Python</p>
+		</article>
+
+		<footer>
+			<h2>About the author</h2>
+			<p>I'm a master’s student from Vienna, Austria. I'm involved in biomedical and software engineering. Besides, I have an interest in home automation, artificial intelligence and cognitive science.</p>
+			<p class="button-holder">
+				<a href="https://github.com/alexschoeberl" class="github-button">Follow</a><script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+				&emsp;<a href="#" class="mail2-button"><span>@: alex + kankiri·com</span></a>
+			</p>
+			<script>m2("@: alex + kankiri·com"); prerep();</script>
+		</footer>
+	</body>
+</html>

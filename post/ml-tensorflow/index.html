@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="Tutorial: Introduction to using TensorFlow for basic machine learning">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<meta name="theme-color" content="#00C800">
+		<title>Basic ML with TensorFlow</title>
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900">
+		<link rel="stylesheet" href="/css/post.css">
+		<script src="/js/code.js"></script>
+	</head>
+
+	<body>
+		<header>
+			<a href="/"><img alt="Picture of the author" width="80" height="80" src="/img/portrait.png"></a>
+			<h2 id="body-header-h2">
+				<a href="/">Alexander Schöberl</a>
+			</h2>
+			<p>Blog · tech, science, tutorials</p>
+		</header>
+
+		<img alt="A girl sitting with a notebook" src="/img/lifestyle001.jpg">
+
+		<article lang="en">
+			<h1>Basic ML with TensorFlow</h1>
+			<p class="article-type">Tutorial · <time datetime="2017-07-22">Jul 22, 2017</time></p>
+			<p><i>TensorFlow</i> is a software library that is mainly used in machine learning. It helps you calculate complex statistical models distributed over multiple CPUs and GPUs. It was created primarily to train and apply deep neural networks, but can also be used in other contexts. Therefore, this article presents three basic concepts of machine learning and explains how to implement them with TensorFlow.</p>
+			<p>This tutorial will make use of TensorFlow's Python-3 bindings. Therefore, you should use <i>Pip</i> to install TensorFlow into a virtual environment. Instructions on how to do it can be found on TensorFlow's <a href="https://www.tensorflow.org/install/install_linux#InstallingVirtualenv">website</a>. The code samples also rely on other libraries like <i>NumPy</i>, <i>Pandas</i> and <i>Matplotlib</i>, so make sure to have them installed. The complete source code of this tutorial, together with the used data, can be found in this compressed <a href="/files/tensorflow.zip">file</a>. It contains one script for each of the three examples. Use the Python interpreter from the virtual environment to run the scripts.</p>
+			<h2>Simple Linear Regression</h2>
+			<p>Simple Linear Regression is a model that is based on two-dimensional sample points. These samples consist of an independent (input) variable, the x-coordinate, and a dependent (output) variable, the y-coordinate. The relationship between the coordinates is modeled using a linear predictor function. The function predicts the value of the dependent variable based on the value of the independent variable. There must be some sort of linear relationship between the coordinates for this model to be accurate.</p>
+			<p>Based on the samples from the training set, the learning algorithm specifies a linear predictor function, the hypothesis <span class="inline-formula">h<sub>θ</sub></span>. Using this hypothesis, unknown values of <span class="inline-formula">y</span> can be estimated for every input value of choice. Since the hypothesis is a univariate linear function, it can be represented by the following formula:
+			<span class="formula">h<sub>θ</sub>: y = θ<sub>0</sub> + θ<sub>1</sub> · x</span>
+			<span class="inline-formula">θ<sub>0</sub></span> and <span class="inline-formula">θ<sub>1</sub></span> represent the parameters of the function. The purpose of the learning algorithm is to calculate and optimize these parameters. A cost function <span class="inline-formula">J</span> indicates the quality of the currently chosen parameter values. Therefore, the function calculates the average magnitude of error from the distance of each sample point to the hypothesis.
+			<span class="formula">J(θ) = <sup>1</sup>⁄<sub>2m</sub> · ∑ ( h<sub>θ</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup> )<sup>2</sup> from 1 to m</span>
+			In this equation, <span class="inline-formula">m</span> represents the number of samples, while <span class="inline-formula">i</span> enumerates each sample. The denominator term <span class="inline-formula">2m</span> is used instead of just <span class="inline-formula">m</span> to simplify background calculations. After the differentiable cost function has been defined, the learning algorithm can find parameters that minimize it. <strong>Gradient descent</strong>, an iterative optimization algorithm, is used to achieve that.</p>
+			<img alt="Plot of a linear regression model" src="/img/plot001.png">
+			<p>The code for this part can be found in the <i>linear_regression.py</i> file. TensorFlow requires you to declare your formulas in a way it can understand. Therefore, you need to create <i>Variables</i> for the parameters that should be learned and <i>Placeholders</i> for the training values. Besides hypothesis and cost function, the optimization operation must also be declared. Pandas is used to load the training data into a Dataframe. During the learning session, this data is repeatedly fed into the Placeholders. Each time, the parameters get gradually better. At the end, the resulting line is plotted over an image of the data points.</p>
+			<h2>Binary Logistic Regression</h2>
+			<p>In the first example, linear regression predicted real-valued variables along a linear function. In contrast, logistic regression is used for classification. In the binary case, there are two classes, 0 and 1. For each independent variable, logistic regression predicts a y-coordinate between <span class="inline-formula">0</span> and <span class="inline-formula">1</span>, indicating the class affiliation. There must be a linear separation between the samples of the different classes for this method to work. In this example, the model is based on three-dimensional sample points, one of which specifies the class.</p>
+			<p>To get values of <span class="inline-formula">y</span> between <span class="inline-formula">0</span> and <span class="inline-formula">1</span>, the hypothesis is a sigmoid function:
+			<span class="formula">h<sub>θ</sub>: y = <sup>1</sup>⁄<sub>1 + e<sup>-t</sup></sub></span>
+			The decision boundary <span class="inline-formula">t</span> of this classification method, however, is still a linear function. Since there are two x-values for every sample point, it can be represented by the following formula:
+			<span class="formula">t = θ<sub>0</sub> + θ<sub>1</sub> · x<sub>1</sub> + θ<sub>2</sub> · x<sub>2</sub></span>
+			After the parameters have been optimized, a value of <span class="inline-formula">t(x) ≥ 0</span>, which implicates a value of <span class="inline-formula">h<sub>θ</sub>(x) ≥ 0.5</span>, will be interpreted as affiliation to class 1. Before a learning algorithm can be used to optimize the parameters, again, a cost function is needed.
+			<span class="formula">J(θ) = -<sup>1</sup>⁄<sub>m</sub> · ∑ [y<sup>(i)</sup> · log h<sub>θ</sub>(x<sup>(i)</sup>) + (1 - y<sup>(i)</sup>) · log (1 - h<sub>θ</sub>(x<sup>(i)</sup>))] from 1 to m</span>
+			Using this convex function, the cost of a correctly classified sample is <span class="inline-formula">0</span>. If the hypothesis, on the other hand, indicates the wrong class, the cost explodes. Again, gradient descent is used to find parameters that minimize the cost function.</p>
+			<img alt="Plot of a binary classification" src="/img/plot002.png">
+			<p>The code for this part can be found in the <i>logistic_regression.py</i> file. It works similar to the first example. This time, however, there are two input values, <code class="inline">x_1</code> and <code class="inline">x_2</code>. Therefore, we now also have an additional parameter. While we repeated the optimizing step 5000 times in the first example, we now increase that number to 15&#8239;000. At the end, the decision boundary is plotted over the image of the data points.</p>
+			<h2>Multilayer Perceptron</h2>
+			<p>In many cases, the classes are not linearly separable. A more complex model is needed for these kinds of classification problems. A multilayer perceptron is a feed-forward neural network model with at least one hidden layer. As in the last example, the samples are points in the two-dimensional space and of two distinct classes. Again, the model predicts a y-coordinate between <span class="inline-formula">0</span> and <span class="inline-formula">1</span>, indicating the class affiliation.</p>
+			<img alt="Our neural network model" src="/img/network001.png">
+			<p>The multilayer perceptron used here consists of three layers. There are two input units, three hidden units and one output unit. The computation a single hidden unit contributes to the model is similar to the hypothesis of logistic regression.
+			<span class="formula">a<sub>i</sub> = <sup>1</sup>⁄<sub>1 + e<sup>-(θ<sub>i0</sub> + θ<sub>i1</sub> · x<sub>1</sub> + θ<sub>i2</sub> · x<sub>2</sub>)</sup></sub></span>
+			The final hypothesis, computed by the output unit, is also based on a sigmoid function of the combined weighted values of the hidden units.
+			<span class="formula">h<sub>θ</sub>: y = <sup>1</sup>⁄<sub>1 + e<sup>-(θ<sub>40</sub> + θ<sub>41</sub> · a<sub>1</sub> + θ<sub>42</sub> · a<sub>2</sub> + θ<sub>43</sub> · a<sub>3</sub>)</sup></sub></span>
+			Every directed line in the neural network diagram is linked to one parameter value of θ. Additionally, the θ<sub>i0</sub> values represent the bias of each unit. The predictions of the hypothesis are interpreted in the same way as with logistic regression. Therefore, the same cost function <span class="inline-formula">J</span> can be used together with gradient descent.</p>
+			<img alt="Plot of a non-linear binary classification" src="/img/plot003.png">
+			<p>The code for this part can be found in the <i>multilayer_perceptron.py</i> file. It works similar to the last example. This time, however, we have a much larger number of parameters — 14. A NumPy array called <code class="inline">theta</code> is used to store them all. Instead of <span class="inline-formula">0</span>, they are initialized with a random value. The hypothesis consists of the combined functions of the 4 anterior units. The learning process is repeated 100&#8239;000 times, which can take quite a while. At the end, the decision boundary is plotted over the image of the data points as a contour plot. It can be interpreted as the probability of a point placed somewhere on it to belong to one of the classes.</p>
+			<p class="article-tags">Machine Learning · TensorFlow · Python</p>
+		</article>
+
+		<footer>
+			<h2>About the author</h2>
+			<p>I'm a master’s student from Vienna, Austria. I'm involved in biomedical and software engineering. Besides, I have an interest in home automation, artificial intelligence and cognitive science.</p>
+			<p class="button-holder">
+				<a href="https://github.com/alexschoeberl" class="github-button">Follow</a><script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+				&emsp;<a href="#" class="mail2-button"><span>@: alex + kankiri·com</span></a>
+			</p>
+			<script>m2("@: alex + kankiri·com"); prerep();</script>
+		</footer>
+	</body>
+</html>
