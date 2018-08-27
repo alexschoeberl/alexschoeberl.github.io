@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="Tutorial: Implementing a convolutional neural network with Pabiana">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<meta name="theme-color" content="#00C800">
+		<title>Distributing a CNN with Pabiana</title>
+		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900">
+		<link rel="stylesheet" href="/css/post.css">
+		<script src="/js/code.js"></script>
+	</head>
+
+	<body>
+		<header>
+			<a href="/"><img alt="Picture of the author" width="80" height="80" src="/img/portrait.png"></a>
+			<h2 id="body-header-h2">
+				<a href="/">Alexander Schöberl</a>
+			</h2>
+			<p>Blog · tech, science, tutorials</p>
+		</header>
+
+		<img alt="Several windmills on a shore" src="/img/wind001.jpg">
+
+		<article lang="en">
+			<h1>Distributing a CNN with Pabiana</h1>
+			<p class="article-type">Tutorial · <time datetime="2018-01-10">Jan 10, 2018</time></p>
+			<p>This tutorial describes how to implement a <i>convolutional neural network</i> with <i>Pabiana</i> and <i>TensorFlow</i>. To demonstrate the frameworks hierarchical communication pathways, the network is split into four layers, each of which is run by a different node. Convolutional neural networks are a type of deep neural networks that are inspired by the visual cortex of humans and have been successfully utilized to classify images, sound samples and similar types of data. They make use of the spatial structure of data to reduce complexity and simultaneously gain translation-invariant properties. Convolutional neural networks can be trainined using gradient descent or similar algorithms via backpropagation. Pabiana is a Python framework based on <a href="http://zeromq.org">ZeroMQ</a> that allows you to intuitively build and distribute cognitive applications over multiple nodes.</p>
+			<p>Usually, a trained CNN will be deployed to a single computer, where it can serve as a service to classify incoming data. For this tutorial, however, we will split the network and run each layer in a different process. This example should only act as a demonstration for the variance of different architectures possible with Pabiana. This tutorial will make use of TensorFlow and its Python-3 bindings. Therefore, you should use <i>Pip</i> to install TensorFlow into a virtual environment. Instructions on how to do it can be found on TensorFlow's <a href="https://www.tensorflow.org/install/install_linux#InstallingVirtualenv">website</a>. Also, have a look at the other <a href="/post/introduction-pabiana">article</a> I wrote on how to install Pabiana. The complete source code of this tutorial can be found in this compressed <a href="/files/cnn.zip">file</a>. Use the Python interpreter from the virtual environment to run the code.</p>
+			<h2>Deep Network Architecture</h2>
+			<p>The convolutional neural network we will use here is pre-trained to classify handwritten digits from the MNIST dataset. It consists of two convolutional layers, a fully-connected layer and an output layer. The first layer utilizes 32 filters, a <i>RELU</i> activation function and <i>max pooling</i>. The second layer includes 64 filters and the same type of post-processing. The fully-connected layer contains 1024 RELU-activated neurons. The network returns an estimate for each digit, with the largest one to be considered its guess.</p>
+			<pre>area = Area(repo['area-name'], repo['interfaces'])
+			config = {
+			  'clock-name': 'clock',
+			    'clock-slots': multiple(1, 6),
+			    'subscriptions': {
+			      'mnist': None
+			    }
+			}<br>
+			@area.alteration(source='mnist')
+			def mnist_input():
+			  if area.context['mnist'][0]['purpose'] == 'prediction':
+			    area.publish({
+			      'purpose': 'prediction',
+			      'data': forward(area.context['mnist'][0]['data']),
+			      'label': area.context['mnist'][0]['label']
+			    })</pre>
+			<p class="img-source">Code extract of convolution/__init__.py</p>
+			<p>The network has been trained as a whole on a single computer with TensorFlow. ADAM optimizer was used as training algorithm. Also, a dropout mechanism was included at the fully-connected layer to reduce overfitting. The weights have been stored as <i>Numpy</i> arrays to a 13&nbsp;MB file called <i>model.npz</i>.</p>
+			<h2>Pabiana Architecture</h2>
+			<p>The application consists of 4 different areas (<i>mnist</i>, <i>conv</i>, <i>fully</i>, <i>output</i>), each implementing one of the layers. The calculations with TensorFlow for each area have been outsourced to Python modules called <i>predict</i>.</p>
+			<ul>
+				<li>mnist/
+					<ul>
+						<li>__init__.py</li>
+						<li>precdict.py</li>
+					</ul>
+				</li>
+				<li>convolution/
+					<ul>
+						<li>__init__.py</li>
+						<li>precdict.py</li>
+					</ul>
+				</li>
+				<li>fully/
+					<ul>
+						<li>__init__.py</li>
+						<li>precdict.py</li>
+					</ul>
+				</li>
+				<li>output/
+					<ul>
+						<li>__init__.py</li>
+						<li>precdict.py</li>
+					</ul>
+				</li>
+			</ul>
+			<pre>x = tf.placeholder("float")
+			weights = tf.Variable(tf.truncated_normal([5, 5, 32, 64], stddev=0.1))
+			bias = tf.Variable(tf.constant(0.1, shape=[64]))<br>
+			convolution = tf.nn.conv2d(x, weights, strides=[1, 1, 1, 1], padding='SAME')
+			relu = tf.nn.relu(convolution + bias)
+			graph = tf.nn.max_pool(relu, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')<br>
+			model = np.load('./model.npz')<br>
+			def forward(data):
+			  with tf.Session() as session:
+			    session.run(tf.global_variables_initializer())
+			    weights.load(model['weights_2'])
+			    bias.load(model['bias_2'])
+			    data = np.array(data)
+			    return graph.eval(feed_dict={x: data}).tolist()</pre>
+			<p class="img-source">Code extract of convolution/predict.py</p>
+			<p>Periodically, a picture is randomly chosen from the MNIST testing dataset and fed through the first convolutional layer. The resulting values are then published to the next layer. Eventually, the data has been passed through the whole network. The uppermost output area logs the network's guess to the console and compares it to the real label.</p>
+			<pre>x = tf.placeholder("float")
+			weights = tf.Variable(tf.truncated_normal([7 * 7 * 64, 1024], stddev=0.1))
+			bias = tf.Variable(tf.constant(0.1, shape=[1024]))<br>
+			reshaped = tf.reshape(x, [-1, 7*7*64])
+			graph = tf.nn.relu(tf.matmul(reshaped, weights) + bias)</pre>
+			<p class="img-source">Code extract of fully/predict.py</p>
+			<p>Study the full source code of the tutorial, to figure out how the application works. You can start all the areas with a single command. You also have to run a synchronizing clock togehter with them to make it work. After some time, you will see the data being passed through the hierarchy of areas in the logs. You can compare the network's guesses to the actual labels.</p>
+			<pre>python3 -m pabiana convolution:conv fully:fully mnist:mnist output:output -C</pre>
+			<p>Theoretically, it would be possible to train the network by passing the gradients backwards through the hierarchy of areas. This would, however, extend training time. In practice, Pabiana should be used to connect complex neural networks, not single layers.</p>
+			<p class="article-tags">Machine Learning · TensorFlow · Python</p>
+		</article>
+
+		<footer>
+			<h2>About the author</h2>
+			<p>I'm a master’s student from Vienna, Austria. I'm involved in biomedical and software engineering. Besides, I have an interest in home automation, artificial intelligence and cognitive science.</p>
+			<p class="button-holder">
+				<a href="https://github.com/alexschoeberl" class="github-button">Follow</a><script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+				&emsp;<a href="#" class="mail2-button"><span>@: alex + kankiri·com</span></a>
+			</p>
+			<script>m2("@: alex + kankiri·com"); prerep();</script>
+		</footer>
+	</body>
+</html>
