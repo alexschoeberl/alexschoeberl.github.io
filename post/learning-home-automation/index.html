@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="My plans for creating a self-learning home automation system">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<meta name="theme-color" content="#00C800">
+		<title>A Learning Home</title>
+		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900">
+		<link rel="stylesheet" href="/css/post.css">
+		<script src="/js/code.js"></script>
+	</head>
+
+	<body>
+		<header>
+			<a href="/"><img alt="Picture of the author" width="80" height="80" src="/img/portrait.png"></a>
+			<h2 id="body-header-h2">
+				<a href="/">Alexander Schöberl</a>
+			</h2>
+			<p>Blog · tech, science, tutorials</p>
+		</header>
+
+		<img alt="5 workers standing in a lake" src="/img/water001.jpg">
+
+		<article lang="en">
+			<h1>A Learning Home</h1>
+			<p class="article-type">Blog · <time datetime="2019-02-24">Feb 24, 2019</time></p>
+			<p>During the last year I set up a number of home automation systems using the <i>Pabiana</i> framework I developed. The framework is still work in progress. Those home automation systems have a number of inputs like cameras, UHF radio receivers or a list of devices currently connected to the WIFI network. They also have control over some external devices like lights, a hi-fi system or window shutters. The algorithms controlling these devices are considerate of their environment and therefore somewhat intelligent. However, they are manually programmed and thus not capable of learning and adapting.</p>
+			<p>Programming all those rules that control a smart home can get very complex. Average users should not have to learn to do that when using the framework. Of course, some of the more safety-relevant rules will have to be hard-coded. But the system should be able to learn the other ones. That's why I started to think about how this feature could be implemented.</p>
+			<h2>The Path to a Learning System</h2>
+			<p>There are three ways a system can learn things. It can learn by itself (<i>unsupervised learning</i>), through trail and error (<i>reinforcement learning</i>) or with specific targets (<i>supervised learning</i>), respectively requiring more user input and preparation. Reinforcement learning (RL) seems to be the right choice for this problem since it lets the user basically train the system through minor inputs. An additional input to the home automation system could be implemented for the user to rate system actions positively or negatively. There are, however, some problems with this setup. The first one is that reinforcement learning needs a lot of time and users will quickly get annoyed if the system keeps turning the lights and music on and off, waiting for praise. In the beginning the system will just take random actions. It is impractical to wait for days until it accidentally takes the right action given the circumstances. Reinforcement learning needs a lot of data and is therefore usually done within a simulated environment. Real-time is just to slow to generate enough interesting data in a reasonable amount of time. Also, the learning process for RL can be unstable if the rewards are sparse.</p>
+			<p>So what could be the right path to create a learning home automation system? It seems that multiple techniques have to be applied to solve the mentioned problems, including <strong>imitation learning</strong>, <strong>curiosity-driven learning</strong> with <strong>intrinsic rewards</strong> and <strong>model-based learning</strong>.</p>
+			<h3>Imitation learning</h3>
+			<p>Imitation learning is actually a form of supervised learning. In a first step data is collected from an expert by recording his actions. That data is then used to train the system. In the case of home automation, the user is the expert. The system will record the states through its inputs and the users responses to them. Using those records we can directly train the decision making policy. A different approach could be to define a high reward for imitating the user and train the system with these rewards. After some time the users might notice the system taking actions right before they were about to do them.</p>
+			<img alt="The skyline of Chicago" src="/img/city001.jpg">
+			<h3>Curiosity-driven Learning</h3>
+			<p>Imitation learning should be fairly stable at replicating user behaviour. However, user interaction might be limited to a few instances a day. Also, a smart home should be able to learn to control devices on its own. Curiosity-driven learning could be used to achieve that. An intrinsic reward function could be defined that incentivises the exploration and discovery of new states. Exploring states recorded for imitation learning could be particularly rewarded. The system would learn useful sequences of actions through this process. To prevent the system from being overly annoying, curious behaviour should only be intrinsically rewarded during specific periods of <i>playtime</i>. Playtime rewards have to become smaller over time to further encourage getting work done. Rewards provided by the user must have a notably larger impact.
+			<h3>Model-based learning</h3>
+			<p>For a stable reinforcement learning process the learning rate has to be set to a rather small value. The system should only take baby steps. That, however, results in a long training time, especially in a real-world setting. Having an internal model of the environment to train the system on can speed up the process. In practice, the model will be a neural network that predicts the future state and resulting rewards based on the current state and action taken. In our case the model learns to imitate the homes behaviour. It is trained through supervised learning with recorded data. Training the system on the model has the following up- and downsides:</p>
+			<ul>
+				<li>The model can create as much training data as is needed</li>
+				<li>The model is not bound to real-time</li>
+				<li>The training process can always restart from arbitrary states</li>
+				<li>However, the model still needs real-world data to be trained</li>
+				<li>And an inaccurate model leads to a misbehaving system</li>
+			</ul>
+			<p>Since model-based learning is a mostly internal process, playtime could be extended without distracting the user.</p>
+			<p>Utilizing these three techniques should enable machine learning for smart home systems. Whether it works in practice, however, will depend on choosing the right parameters. Finding the right parameters usually involves a lot of trail and error. I am eager to find out how much effort it will make to translate my plans into practice.</p>
+			<p class="article-tags">Home Automation · Reinforcement Learning · Machine Learning</p>
+		</article>
+
+		<footer>
+			<h2>About the author</h2>
+			<p>I'm a master’s student from Vienna, Austria. I'm involved in biomedical and software engineering. Besides, I have an interest in home automation, artificial intelligence and cognitive science.</p>
+			<p class="button-holder">
+				<a href="https://github.com/alexschoeberl" class="github-button">Follow</a><script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+				&emsp;<a href="#" class="mail2-button"><span>@: alex + kankiri·com</span></a>
+			</p>
+			<script>m2("@: alex + kankiri·com"); prerep();</script>
+		</footer>
+	</body>
+</html>
