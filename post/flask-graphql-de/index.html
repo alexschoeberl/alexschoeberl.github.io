@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="Tutorial zum Erstellen eines GraphQL-Interfaces mit Flask">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<meta name="theme-color" content="#00C800">
+		<title>Erstellen eines GraphQL-APIs mit Flask</title>
+		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900">
+		<link rel="stylesheet" href="/css/post.css">
+		<script src="/js/code.js"></script>
+	</head>
+
+	<body>
+		<header>
+			<a href="/"><img alt="Picture of the author" width="80" height="80" src="/img/portrait.png"></a>
+			<h2 id="body-header-h2">
+				<a href="/">Alexander Schöberl</a>
+			</h2>
+			<p>Blog · tech, science, tutorials</p>
+		</header>
+
+		<img alt="A road winding through a forest seen from above" src="/img/road002.jpg">
+
+		<article lang="de">
+			<h1>Erstellen eines GraphQL-APIs mit Flask</h1>
+			<p class="article-type">Tutorial · <time datetime="2019-06-12">Jun 12, 2019</time></p>
+			<p><i>GraphQL</i> ist eine bei Facebook entwickelte Data-Query-Language, ähnlich <i>SQL</i>, die allerdings auf <i>HTTP</i> aufsetzt und der Kommunikation zwischen Webapplikationen bzw. Webclients dient. Sie stellt damit eine flexiblere Alternative zu statischen <i>REST</i>-APIs dar. In diesem Tutorial zeige ich, wie man mit dem <i>Flask web application framework</i> Daten über ein GraphQL-Interface zugänglich macht. Dabei wird bewusst auf den Einsatz von <i>ORM</i>-Frameworks und -Modellen verzichtet.</p>
+			<p>Um das Tutorial durchführen zu können, müssen einige <i>Python</i>-Packages installiert werden. Dafür kann folgender Befehl genutzt werden:</p>
+			<pre>python3 -m pip install -U Flask-GraphQL graphene</pre>
+			<p>Die zu entwickelnde Applikation wird Informationen über Bücher in Bibliotheken bereitstellen. Die folgende Auflistung zeigt die Struktur des Projektordners. Der gesamte Code des Tutorials findet sich in einem <a href="https://github.com/alexschoeberl/flask-graphql">Github-Repository</a>.</p>
+			<ul>
+				<li>run.py</li>
+				<li>library/
+					<ul>
+						<li>__init__.py</li>
+						<li>setup.py</li>
+						<li>data.py</li>
+						<li>schema/
+								<ul>
+									<li>__init__.py</li>
+									<li>items.py</li>
+									<li>libraries.py</li>
+									<li>queries.py</li>
+								</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+			<p>Die Daten, die im Zuge dieses Tutorials zugänglich gemacht werden sollen, sind in der Datei <i>data.py</i> zu finden. Dabei handelt es sich um eine einfache Liste an Büchern, Buchreihen und CDs, die jeweils einer von zwei Bibliotheken zugeordnet sind. Das Web-API soll dabei nur jeweils die Elemente einer spezifizierten Bibliothek anzeigen.</p>
+			<p>In diesem Tutorial kommt das <i>Graphene Framework</i> zur Anwendung, das GraphQL Abfragen interpretieren und beantworten kann. Dafür muss ein Schema definiert werden, das der Struktur der Daten entspricht, die zugänglich gemacht werden sollen. Dieses Schema wird durch Python-Klassen und Klassenvariablen in Objekt-orientierter Weise repräsentiert. Die Module im Ordner <i>schema</i> enthalten die Definitionen dieser Klassen.</p>
+			<pre>class Item(graphene.Interface):
+			  id = graphene.ID(required=True)
+			  title = graphene.String(required=True)
+			  included = graphene.types.datetime.Date(required=True)<br><br>
+			class Book(graphene.ObjectType):
+			  class Meta:
+			    interfaces = (Item,)<br>
+			  author = graphene.String(required=True)
+			  editor = graphene.String(required=True)
+			  publisher = graphene.String(required=True)
+			  published = graphene.Int(required=True)<br><br>
+			class Collection(graphene.ObjectType):
+			  class Meta:
+			    interfaces = (Item,)<br>
+			  books = graphene.List(graphene.NonNull(Book))
+			  publisher = graphene.String(required=True)<br><br>
+			class CD(graphene.ObjectType):
+			  class Meta:
+			    interfaces = (Item,)<br>
+			  artist = graphene.String(required=True)
+			  label = graphene.String(required=True)
+			  published = graphene.Int(required=True)
+			</pre>
+			<p>Im Gegensatz zur flachen Hierarchie der Typen in der Datei <i>data.py</i> kommt bei der Definiton des Schemas Vererbung zum Einsatz. Um diese zu implementieren wird der <i>graphene.Interface</i>-Typ genutzt. Attribute, die als Teil des Interfaces definiert sind, stehen auch in allen Klassen, die dieses Interface implementieren, zur Verfügung. Das gilt zumindest, wenn man auf Objekte dieser Klassen mittels GraphQL zugreift. An den Definitionen der Attribute ist auch zu sehen, das GraphQL eine typisierte Sprache ist.</p>
+			<p>Nach der Definition des Schemas müssen die erstellten Klassen mit konkreten Daten befüllt werden. Dafür muss Graphene für jedes Attribut mitgeteilt werden, wie es aufgelöst werden soll. Direkt in der Klassendefiniton muss für jedes Attribut daher eine statische Methode mit der Signatur <code class="inline">resolve_&lt;attribute&gt;(parent, info)</code> implementiert werden. Der Parameter <code class="inline">parent</code> referenziert in den Beispielen hier immer das aktuelle Objekt, hat also eine ähnliche Funktion wie der Parameter <code class="inline">self</code>. Mittels <code class="inline">parent.id</code> kann daher die Identifikationsnummer des aktuellen Objekts herausgefunden und der gesuchte Wert aus den Daten ausgelesen werden. <i>Resolver</i> werden dabei nur ausgeführt, wenn der Wert des jeweiligen Attributs im Query angefragt wurde.</p>
+			<pre>class Book(graphene.ObjectType):
+			  def resolve_publisher(parent, info):
+			    return items[parent.id].publisher
+			</pre>
+			<p>Entspricht eine Klassenvariable dem Listentyp, muss der Resolver auch eine Liste zurückgeben. Das ist zum Beispiel bei der Variable <code class="inline">books</code> der <i>Collection</i>-Klasse der Fall. Der im folgenden Codeausschnitt definierte Resolver liefert eine Liste aller Bücher zurück, die Teil einer Buchreihe sind. Da Buchreihen in den Daten nur Bücher und keine CDs enthalten, muss der Typ des Elements nicht überprüft werden.</p>
+			<pre>class Collection(graphene.ObjectType):
+			  def resolve_books(parent, info):
+			    collection = items[parent.id]
+			    return [Book(id=id) for id in collection.parts]
+			</pre>
+			<p>Ein ähnlicher Resolver findet sich auch in der <i>Library</i>-Klasse in der Datei <i>libraries.py</i>. Dort werden alle Elemente in den Daten gesucht, die Teil einer spezifizierten Bibliothek sind. In diesem Fall muss allerdings der richtige Typ des jeweiligen Elements ausgewählt werden. Die Klasse <i>Query</i> in der Datei <i>queries.py</i> stellt quasi den Einstiegspunkt einer GraphQL-Abfrage dar. In dieser Klasse wurde definiert, dass sowohl eine Liste aller Bibliotheken, als auch Informationen über eine spezifizierte Bibliothek abgerufen werden können. Um Informationen zu einer Bibliothek zu erhalten, muss ein String-Parameter mit der Bezeichnung <i>name</i> angegeben werden. Dieser Parameter wird an den Resolver weitergereicht.</p>
+			<pre>class Query(graphene.ObjectType):
+			  libraries = graphene.List(Library)
+			  library = graphene.Field(Library, name=graphene.String())<br>
+			  def resolve_libraries(parent, info):
+			    libraries = {items[id].library for id in items}
+			    return [Library(name=name) for name in libraries]<br>
+			  def resolve_library(parent, info, name):
+			    if name in {items[id].library for id in items}:
+			      return Library(name=name)
+			</pre>
+			<p>In der Datei <i>setup.py</i> wird das erzeugte Schema geladen und der API-Endpunkt bei der Flask-Applikation registriert. Der Parameter <code class="inline">graphiql</code> bewirkt, dass eine interaktive Webapplikation bereitgestellt wird, über die das API im Browser abgefragt werden kann. Dafür muss der URL des Endpunkts mit dem Browser aufgerufen werden.</p>
+			<pre>def add_interface(app):
+			  from library.schema.queries import Query
+			  from library.schema.items import Book, CD, Collection<br>
+			  schema = graphene.Schema(query=Query, types=[Book, Collection, CD])
+			  view = GraphQLView.as_view('api', schema=schema, graphiql=True)
+			  app.add_url_rule('/api', view_func=view)
+			</pre>
+			<p>Wird die Flask-Applikation jetzt gestartet, und die interaktive Webapplikation aufgerufen, können die Daten abgefragt werden. Dafür müssen GraphQL-Queries formuliert werden. Diese Abfragen beschreiben im Grunde genommen einfach, welche Attribute zurückgeliefert werden sollen. Handelt es sich bei einem Attribut um eine Liste, muss an dieser Stelle ein Sub-Query formuliert werden.</p>
+			<img alt="Image description" src="/img/graphiql.png">
+			<p class="img-source">Zwei Queries und die Antwort auf <i>Query2</i></p>
+			<p>Im linken Textfeld dieser Abbildung wurden zwei Queries definiert. Queries tragen einen Namen. Mittels der ersten Abfrage sollen die Namen aller verfügbaren Bibliotheken erfragt werden. Dafür wird das Attribut <code class="inline">libraries</code> der <i>Query</i>-Klasse abgefragt. Da es sich dabei um einen Listentyp handelt, muss ein Sub-Query angegeben werden. Von jedem Objekt der <i>Library</i>-Klasse soll nur der Name abgefragt werden. Der zweite Query fragt alle Elemente der Bibliothek mit dem Namen <code class="inline">Library 1</code> ab. Das Feld <code class="inline">__typename</code> ist dabei ein standardmäßig vorhandenes Attribut, das den Typ eines Elements angibt. In diesem Query ist ein Sub-Query spezifiziert, der nur für Elemente des Typs <i>Book</i> ausgeführt wird. Im rechten Textfeld der Abbildung ist die Antwort auf diesen zweiten Query dargestellt.</p>
+			<p class="article-tags">GraphQL · Flask · Python</p>
+		</article>
+
+		<footer>
+			<h2>About the author</h2>
+			<p>I'm a master’s student from Vienna, Austria. I'm involved in biomedical and software engineering. Besides, I have an interest in home automation, artificial intelligence and cognitive science.</p>
+			<p class="button-holder">
+				<a href="https://github.com/alexschoeberl" class="github-button">Follow</a><script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
+				&emsp;<a href="#" class="mail2-button"><span>@: alex + kankiri·com</span></a>
+			</p>
+			<script>m2("@: alex + kankiri·com"); prerep();</script>
+		</footer>
+	</body>
+</html>
