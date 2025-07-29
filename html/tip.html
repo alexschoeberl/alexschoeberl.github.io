@@ -1,6 +1,7 @@
 <html>
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -11,19 +12,20 @@
 <body>
     <form>
         <p><label for="price">Price:</label><br>
-            <input type="number" id="price" min="1" step="0.01" style="width:150px;">
+            <input type="number" id="price" min="1" step="0.01" inputmode="decimal" pattern="[0-9]*"
+                style="width:150px;">
         </p>
         <p><label for="type">Type:</label><br>
             <select id="type" style="width:150px;">
                 <option value="10">Around 10%</option>
                 <option value="min10">Min. 10%</option>
                 <option value="max10">Max 10%</option>
-                <option value="min5">Min 5%</option>´
+                <option value="min5">Min 5%</option>
             </select>
         </p>
         <button onclick="calculate(event)">Submit</button>
     </form>
-    <p id="result"></p>
+    <p id="result" style="font-size: small;"></p>
     <script>
         function calculate() {
             event.preventDefault();
