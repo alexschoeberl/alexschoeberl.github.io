@@ -11,16 +11,13 @@
 
 <body>
     <form>
-        <p><label for="price">Price:</label><br>
-            <input type="number" id="price" min="1" step="0.01" inputmode="decimal" pattern="[0-9]*"
+        <p><input type="number" id="price" min="1" step="0.01" inputmode="decimal" pattern="[0-9]*"
                 style="width:150px;">
         </p>
-        <p><label for="type">Type:</label><br>
-            <select id="type" style="width:150px;">
-                <option value="10">Around 10%</option>
-                <option value="min10">Min. 10%</option>
-                <option value="max10">Max 10%</option>
-                <option value="min5">Min 5%</option>
+        <p><select id="type" style="width:150px;">
+                <option value="default">Default</option>
+                <option value="exceptional">Excep</option>
+                <option value="low">Low</option>
             </select>
         </p>
         <button onclick="calculate(event)">Submit</button>
@@ -34,16 +31,30 @@
             const type = document.getElementById('type').value;
             const elem_result = document.getElementById('result');
 
-            if (type === '10')
-                sum = Math.round(price + price * 0.1);
-            else if (type === 'min10')
+            let sum = 0;
+            if (type === 'default' && price < 50)
+                sum = Math.ceil(price + price * 0.08);
+            else if (type === 'default' && price < 110)
+                sum = Math.round(price + price * 0.08);
+            else if (type === 'default')
+                sum = Math.floor(price + price * 0.08);
+
+            else if (type === 'exceptional' && price < 40)
                 sum = Math.ceil(price + price * 0.1);
-            else if (type === 'max10')
-                sum = Math.floor(price + price * 0.1);
-            else if (type === 'min5')
+            else if (type === 'exceptional' && price < 100)
+                sum = Math.round(price + price * 0.1);
+            else if (type === 'exceptional')
+                sum = Math.round(price + price * 0.09);
+
+            else if (type === 'low' && price < 30)
+                sum = Math.ceil(price + price * 0.06);
+            else if (type === 'low')
                 sum = Math.round(price + price * 0.05);
 
-            elem_result.textContent = sum + " (" + Math.round(sum - price) + ")";
+            if (sum > 65 && (sum + 1) % 10 == 0)
+                sum += 1;
+
+            elem_result.textContent = sum + " (" + (sum - price).toFixed(1) + ")";
         }
     </script>
 </body>
